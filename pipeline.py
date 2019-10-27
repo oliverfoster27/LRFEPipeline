@@ -90,23 +90,24 @@ class LRFEPipeline(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None):
 
+        X_trans = X.copy()
         for state in self.fit_state:
 
             if state['inv_state'] == 1:
-                X[state['feature']] = 0.0
+                X_trans[state['feature']] = 0.0
                 for transf, coef in state['operations']:
                     if coef != 0:
-                        X[state['feature']] += coef * (X[state['base_feature']] ** transf)
-                X[state['feature']] += state['intercept']
-                X[state['feature']] = 1 / X[state['feature']]
+                        X_trans[state['feature']] += coef * (X[state['base_feature']] ** transf)
+                X_trans[state['feature']] += state['intercept']
+                X_trans[state['feature']] = 1 / X_trans[state['feature']]
             else:
 
                 for transf, coef in state['operations']:
                     if coef != 0:
-                        X['{}_deg{}'.format(state['base_feature'], transf)] = X[state['base_feature']] ** transf
-            X.drop([state['base_feature']], axis=1, inplace=True)
+                        X_trans['{}_deg{}'.format(state['base_feature'], transf)] = X[state['base_feature']] ** transf
+            X_trans.drop([state['base_feature']], axis=1, inplace=True)
 
-        return X
+        return X_trans
 
 
 if __name__ == "__main__":
